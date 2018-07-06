@@ -52,7 +52,7 @@ export const DefaultRoute = createStackNavigator(
       screen: Descriptions
     }
   }, {
-    initialRouteName: 'Description',
+    initialRouteName: 'Home',
     navigationOptions:{
       title: 'Buffer Managment',
       headerStyle: {

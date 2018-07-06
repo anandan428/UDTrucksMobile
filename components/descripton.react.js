@@ -32,40 +32,40 @@ export default class Descriptions extends React.Component {
                 <CardItem>
                         <View>
                             <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 20, fontWeight: '600'}}>
+                                <Text style={{fontSize: 15, fontWeight: '500'}}>
                                     ID: 
                                 </Text>
                                 <Right>
-                                    <Text style={{fontSize: 17, fontWeight: '400'}}>
+                                    <Text style={{fontSize: 13, fontWeight: '400'}}>
                                         Some dummy text
                                     </Text>
                                 </Right>
                             </View>
                             <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 18, fontWeight: '500'}}>
+                                <Text style={{fontSize: 15, fontWeight: '500'}}>
                                     Location: 
                                 </Text>
                                 <Right>
-                                    <Text style={{fontSize: 17, fontWeight: '400'}}>
+                                    <Text style={{fontSize: 13, fontWeight: '400'}}>
                                         Some dummy text
                                     </Text>
                                 </Right>
                             </View>
                             <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 18, fontWeight: '500'}}>
+                                <Text style={{fontSize: 15, fontWeight: '500'}}>
                                     Quantity: 
                                 </Text>
                                 <Right>
-                                    <Text style={{fontSize: 17, fontWeight: '400'}}>
+                                    <Text style={{fontSize: 13, fontWeight: '400'}}>
                                         Some dummy text
                                     </Text>
                                 </Right>
                             </View>
                             <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 18, fontWeight: '500'}}>
+                                <Text style={{fontSize: 15, fontWeight: '500'}}>
                                     Primary Buffer: 
                                 </Text>
-                                <Text style={{fontSize: 17, fontWeight: '400', marginLeft: 20}}>
+                                <Text style={{fontSize: 13, fontWeight: '400', marginLeft: 20}}>
                                     Some dummy Id
                                 </Text>
                             </View>
