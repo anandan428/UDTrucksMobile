@@ -1,51 +1,70 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  AsyncStorage,
-  StatusBar,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { createSwitchNavigator } from 'react-navigation';
-import { NonAdminStack } from './nonAdminStack';
-import { LoginStack } from './login';
+import { TabNavigator, TabBarBottom, createStackNavigator } from 'react-navigation';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Order from '../components/order.react';
+import Parts from '../components/parts.react';
+import Buffers from '../components/buffer.react';
+import Descriptions from '../components/descripton.react';
 
-
-class AuthLoadingScreen extends React.Component {
-    constructor() {
-      super();
-      this._bootstrapAsync();
+export const DefaultRoute = createStackNavigator(
+  {
+    Home: TabNavigator(
+      {
+        Order: {
+          screen: Order
+        },
+        Parts: {
+          screen: Parts
+        },
+        Buffers: {
+          screen: Buffers 
+        }
+      },
+      {
+        navigationOptions: ({ navigation }) => ({
+          tabBarIcon: ({focused, tintColor}) => {
+            const { routeName } = navigation.state;
+            let iconName;
+            if(routeName === 'Order') {
+              iconName = `ios-add-circle${focused ? '' : '-outline'}`;
+            } else if(routeName === 'Parts') {
+              iconName = `ios-cog${focused ? '' : '-outline'}`;
+            } else if(routeName === 'Buffers') {
+               iconName = `ios-basket${focused ? '' : '-outline'}`;
+            }
+            return <Icon name = {iconName} size={25} color = {tintColor} />;
+          },
+        }),
+        tabBarComponent: TabBarBottom,
+        tabBarPosition: 'bottom',
+        tabBarOptions: {
+          activeTintColor: '#2E86C1',
+          inactiveTintColor: 'grey',
+          labelStyle: {
+            fontSize: 12
+          }
+        },
+        animationEnabled: false,
+        swipeEnabled: false
+      }
+    ),
+    Description: {
+      screen: Descriptions
     }
-    _bootstrapAsync = async () => {
-      const userToken = await AsyncStorage.getItem('userToken');
-      this.props.navigation.navigate(userToken ? 'NonAdmin' : 'Login');
-    };
-    render() {
-      return (
-        <View style={styles.container}>
-          <ActivityIndicator />
-          <StatusBar barStyle="default" />
-        </View>
-      );
+  }, {
+    initialRouteName: 'Description',
+    navigationOptions:{
+      title: 'Buffer Managment',
+      headerStyle: {
+        backgroundColor: '#2E86C1',
+        elevation: 0
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontFamily: '-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontWeight: '400',
+        color: '#fff'
+      }
     }
   }
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-  });
-  
-  
-  export const RootStack = createSwitchNavigator(
-    {
-      AuthLoading: AuthLoadingScreen,
-      NonAdmin: NonAdminStack,
-      Login: LoginStack,
-    },
-    {
-      initialRouteName: 'AuthLoading',
-    }
-);
+)
