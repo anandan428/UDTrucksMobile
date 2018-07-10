@@ -19,7 +19,6 @@ export default class Parts extends React.Component {
         }
     }
     onSubmit = () => {
-        debugger;
         if(this.state.itemID){
             this.props.navigation.navigate('Description', {
                 itemId: this.state.itemID,
