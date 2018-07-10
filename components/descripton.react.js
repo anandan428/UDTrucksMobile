@@ -73,10 +73,6 @@ export default class Descriptions extends React.Component {
                     }
                     this.setState({timeline: this.data});
                    }).catch(error => console.log(error));
-        // getPartsInfo(this.state.itemId).then((data) => {
-        //     let locationData = data.data;
-
-        // })
     }
     
     render(){
