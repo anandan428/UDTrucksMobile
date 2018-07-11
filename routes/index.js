@@ -5,6 +5,7 @@ import Order from '../components/order.react';
 import Parts from '../components/parts.react';
 import Buffers from '../components/buffer.react';
 import Descriptions from '../components/descripton.react';
+import Settings from '../components/setting.react';
 
 export const DefaultRoute = createStackNavigator(
   {
@@ -18,6 +19,9 @@ export const DefaultRoute = createStackNavigator(
         },
         Buffers: {
           screen: Buffers 
+        },
+        Setting: {
+          screen: Settings
         }
       },
       {
@@ -31,6 +35,8 @@ export const DefaultRoute = createStackNavigator(
               iconName = `ios-cog${focused ? '' : '-outline'}`;
             } else if(routeName === 'Buffers') {
                iconName = `ios-basket${focused ? '' : '-outline'}`;
+            } else if(routeName === 'Setting') {
+              iconName = `ios-construct${focused ? '' : '-outline'}`;
             }
             return <Icon name = {iconName} size={25} color = {tintColor} />;
           },
