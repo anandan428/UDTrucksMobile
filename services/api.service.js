@@ -2,7 +2,6 @@ var axios = require('axios');
 
 
 export function getPartsInfo(partNumber) {
-    alert(partNumber);
     return axios.get('http://buffermanagementwebservice.azurewebsites.net/api/PartInventories/ByPartNumber', {
         params: {
             PartNumber: partNumber
