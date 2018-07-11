@@ -21,7 +21,7 @@ export default class Order extends React.Component {
                 PartNo: '',
                 MovementType: '',
                 Quantity: '',
-                OperatorName: '',
+                OperatorName: 'A242230',
                 isInbound: false
             }, 
             locationForPart: []
@@ -69,12 +69,7 @@ export default class Order extends React.Component {
                 <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 5, height: 40}}>
                     <Input onChangeText={(text) => this.onInputChange(text, 'PartNo')} onEndEditing={this.onEditingOver} value={this.state.formData.PartNo}/>
                 </Item>
-                <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Moment Type</Text>
-                <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5}}>
-                    <Text style={{alignItems: 'flex-start', fontSize: 15, fontWeight: '500'}}>Inbound</Text>
-                    <Switch value={this.state.formData.isInbound} onValueChange={this.momentType}/>
-                    <Text style={{alignItems: 'flex-end', fontSize: 15, fontWeight: '500'}}>Outbound</Text>
-                </View>
+                <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Moment Type: Picking</Text>
                 <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5}}>
                     <View style={{alignItems: 'flex-start'}}>
                         <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Quantity</Text>
@@ -85,7 +80,7 @@ export default class Order extends React.Component {
                     <View >
                         <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>User ID</Text>
                         <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 5, height: 40, width: 200}}>
-                            <Input onChangeText={(text) => this.onInputChange(text, 'OperatorName')} value={this.state.formData.OperatorName}/>
+                            <Input disabled = {true} onChangeText={(text) => this.onInputChange(text, 'OperatorName')} value={this.state.formData.OperatorName}/>
                         </Item>
                     </View>
                     <View>

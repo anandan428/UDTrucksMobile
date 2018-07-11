@@ -20,3 +20,11 @@ export function getAllMovementLog(){
 export function getAllLocation(){
     return axios.get('http://buffermanagementwebservice.azurewebsites.net/api/Locations');
 }
+
+export function getLocation(locationName){
+    return axios.get('http://buffermanagementwebservice.azurewebsites.net/api/Locations', {
+        params: {
+            id: locationName
+        }
+    });
+}   

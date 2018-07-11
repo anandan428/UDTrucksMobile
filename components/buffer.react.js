@@ -1,17 +1,56 @@
 import React from 'react';
 import {
+    ScrollView,
     View,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity
 } from 'react-native';
+import ScanScreen from '../containers/BarCodeScanner.react';
+import { Item, Input, Button} from 'native-base';
 
 
 export default class Buffers extends React.Component {
+    constructor(){
+        super();
+        this.state = {
+            itemID: '',
+            type: 'Buffer'
+        }
+    }
+    onSubmit = () => {
+        if(this.state.itemID){
+            this.props.navigation.navigate('Description', {
+                itemId: this.state.itemID,
+                type: this.state.type
+            });    
+        } else {
+            alert('Enter buffer ID');
+        }        
+    }
+    onInputChange = (text) => {
+        this.setState({
+            itemID: text
+        });
+    }
     render(){
         return(
-            <Text>Hello Order Screen</Text>
+            <ScrollView contentContainerStyle={{ padding: 10}}>
+               <ScanScreen />
+               <View style={{padding: 10}}>
+                <Text style={{fontSize: 19, marginTop: 15, fontWeight: '600', alignSelf: 'center'}}> OR </Text>
+                <Text style={{justifyContent: 'flex-start', fontSize: 19, color: 'black', fontWeight: '500', marginTop: 20}}>Part/ Buffer ID</Text>
+                <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 10}}>
+                    <Input onChangeText={this.onInputChange} />
+                </Item>
+                <View style={{justifyContent: 'center', alignItems:'center', alignSelf: 'stretch', flexDirection: 'row', marginTop: 20}}>
+                    <Button rounded style={{justifyContent: 'center', alignItems:'center', width: 250}} onPress={this.onSubmit}>
+                        <Text style={{color: '#fff', padding: 5}}>SUBMIT</Text>
+                    </Button>
+                </View>
+               </View>
+           </ScrollView> 
         );
     }
 }

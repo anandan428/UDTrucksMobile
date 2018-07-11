@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Card, CardItem, View, Right } from 'native-base';
 import Timeline from 'react-native-timeline-listview';
-import { getPartsInfo, getAllMovementLog, getAllLocation } from '../services/api.service';
+import { getPartsInfo, getAllMovementLog, getAllLocation, getLocation } from '../services/api.service';
 import ProgressCircle from 'react-native-progress-circle'
 
 export default class Descriptions extends React.Component {
@@ -28,8 +28,9 @@ export default class Descriptions extends React.Component {
               parts: {
                   partsLocation: [],
                   total: '',
-                  partsInfo: [],
-                  timeLine: []
+              },
+              buffers: {
+                  bufferInfos: []
               }
           }
       }
@@ -61,6 +62,25 @@ export default class Descriptions extends React.Component {
                         ]
                     );
                 });
+                break;
+            case 'Buffer': this.setState({key: 'LocationName'});
+                getLocation(itemId).then((data) => {
+                    let records = data.data;
+                    let buffers = JSON.parse(JSON.stringify(this.state.buffers));
+                    buffers.bufferInfos = records;
+                    this.setState({buffers: buffers});
+
+                }).catch(error => {
+                    Alert.alert(
+                        'Not Found',
+                        'The entity was not found',
+                        [
+                            {text: 'OK', onPress: () => this.props.navigation.navigation.goBack()}
+                        ]
+                    );
+                });
+                break;
+                
         }
         getAllMovementLog().then((data) => {
                     this.data = [];
@@ -79,50 +99,78 @@ export default class Descriptions extends React.Component {
         showPrimary = () => {
             if(this.state.type === 'Buffer'){
                 return (
-                    <Card>
-                        <CardItem>
-                            <View>
-                                <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                        ID: 
-                                    </Text>
-                                    <Right>
-                                        <Text style={{fontSize: 13, fontWeight: '400'}}>
-                                            {this.state.itemId}
+                    <View>
+                        <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
+                            Buffer Information
+                        </Text>
+                        <Card>
+                            <CardItem>
+                                <View>
+                                    <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                        <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                            ID: 
                                         </Text>
-                                    </Right>
-                                </View>
-                                <View style={{flexDirection: 'row', alignItems:'center'}} >
-                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                        Location: 
-                                    </Text>
-                                    <Right>
-                                        <Text style={{fontSize: 13, fontWeight: '400'}}>
-                                            Some dummy text
+                                        <Right>
+                                            <Text style={{fontSize: 13, fontWeight: '400'}}>
+                                                {this.state.itemId}
+                                            </Text>
+                                        </Right>
+                                    </View>
+                                    <View style={{flexDirection: 'row', alignItems:'center'}} >
+                                        <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                            Location: 
                                         </Text>
-                                    </Right>
-                                </View>
-                                <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                        Quantity: 
-                                    </Text>
-                                    <Right>
-                                        <Text style={{fontSize: 13, fontWeight: '400'}}>
-                                            Some dummy text
+                                        <Right>
+                                            <Text style={{fontSize: 13, fontWeight: '400'}}>
+                                                {this.state.buffers.bufferInfos.LocationName}
+                                            </Text>
+                                        </Right>
+                                    </View>
+                                    <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                        <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                            Quantity: 
                                         </Text>
-                                    </Right>
+                                        <Right>
+                                            <Text style={{fontSize: 13, fontWeight: '400'}}>
+                                                {this.state.buffers.bufferInfos.Capacity}
+                                            </Text>
+                                        </Right>
+                                    </View>
+                                    <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                        <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                            Primary Buffer: 
+                                        </Text>
+                                        <Text style={{fontSize: 13, fontWeight: '400', marginLeft: 20}}>
+                                            {this.state.buffers.bufferInfos.AssociatedPrimeLocation ? this.state.buffers.bufferInfos.AssociatedPrimeLocation : 'No prime location'}
+                                        </Text>
+                                    </View>
                                 </View>
-                                <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                        Primary Buffer: 
-                                    </Text>
-                                    <Text style={{fontSize: 13, fontWeight: '400', marginLeft: 20}}>
-                                        Some dummy Id
-                                    </Text>
+                            </CardItem>
+                        </Card>
+                        <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
+                            Status
+                        </Text>
+                        <Card>
+                            <View style={{flexDirection: 'row', flex: 1, padding: 20}}>
+                                <View>
+                                    <ProgressCircle
+                                                percent={this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity}
+                                                radius={50}
+                                                borderWidth={8}
+                                                color="#3399FF"
+                                                shadowColor="#999"
+                                                bgColor="#fff">
+                                                    <Text style={{ fontSize: 18 }}>{this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity}</Text>
+                                    </ProgressCircle>
+                                </View>
+                                <View style={{marginLeft: 20}}>
+                                    <Text style={{fontSize: 17, fontWeight: '500'}}>Total Capacity: {this.state.buffers.bufferInfos.Capacity}</Text>
+                                    <Text style={{fontSize: 15, fontWeight: '500'}}>Available Capacity: {this.state.buffers.bufferInfos.AvailableCapacity}</Text>
+                                    <Text style={{fontSize: 15, fontWeight: '500'}}>Filled Capacity: {this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity + '%'}</Text>
                                 </View>
                             </View>
-                        </CardItem>
-                    </Card>
+                        </Card>
+                    </View>
                 );
             }            
             else{
@@ -158,7 +206,7 @@ export default class Descriptions extends React.Component {
                                 </View>
                             </CardItem>
                         </Card>
-                        <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
+                        {/* <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
                             Status
                         </Text>
                         <Card>
@@ -195,7 +243,7 @@ export default class Descriptions extends React.Component {
                                     </View>
                                 </View>
                             </View>
-                        </Card>
+                        </Card> */}
                         <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
                             Other Locations
                         </Text>
