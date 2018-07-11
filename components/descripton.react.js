@@ -4,10 +4,13 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    Alert
 } from 'react-native';
 import { Card, CardItem, View, Right } from 'native-base';
 import Timeline from 'react-native-timeline-listview';
+import { getPartsInfo, getAllMovementLog, getAllLocation } from '../services/api.service';
+import ProgressCircle from 'react-native-progress-circle'
 
 export default class Descriptions extends React.Component {
     static navigationOptions = {
@@ -15,148 +18,216 @@ export default class Descriptions extends React.Component {
       };
       constructor(){
           super();
-          this.data = [
-            {time: '09:00', title: 'Inbound, 27 July 09:00', description: 'Part something, from primary location, quantity 100'},
-            {time: '10:45', title: 'Outbound, 27 July 10:45', description: 'Part something, from primary location, quantity 100'},
-            {time: '12:00', title: 'Inbound, 27 July 12:00', description: 'Part something, from primary location, quantity 100'},
-            {time: '14:00', title: 'Outbound, 27 July 14:00', description: 'Part something, from primary location, quantity 100'},
-            {time: '16:30', title: 'Outbound, 27 July 16:30', description: 'Part something, from primary location, quantity 100'}
-          ]
+          this.state = {
+              momentLogs: [],
+              allLocation: [],
+              type: '',
+              key: '',
+              itemId: '',
+              timeline: [],
+              parts: {
+                  partsLocation: [],
+                  total: '',
+                  partsInfo: [],
+                  timeLine: []
+              }
+          }
       }
+    componentDidMount(){
+        const { navigation } = this.props;
+        const itemId = navigation.getParam('itemId');
+        const type = navigation.getParam('type');
+        this.setState({type: type});
+        this.setState({itemId: itemId});
+        switch(type){
+            case 'Part': this.setState({key: 'PartNo'});
+                getPartsInfo(itemId).then((data) => {
+                    let totalInventory = 0;
+                    let records = data.data;
+                    let parts = JSON.parse(JSON.stringify(this.state.parts));
+                    for (const iterator of records) {
+                        totalInventory += iterator.Quantity;
+                        parts.partsLocation.push(iterator);
+                    }
+                    parts.total = '' + totalInventory;
+                    this.setState({parts: parts});
+
+                }).catch(error => {
+                    Alert.alert(
+                        'Not Found',
+                        'The entity was not found',
+                        [
+                            {text: 'OK', onPress: () => this.props.navigation.navigation.goBack()}
+                        ]
+                    );
+                });
+        }
+        getAllMovementLog().then((data) => {
+                    this.data = [];
+                    let filteredMomentLogs = data.data.filter(element => element[this.state.key] === this.state.itemId);
+                    this.setState({momentLogs : filteredMomentLogs});
+                    for (const iterator of filteredMomentLogs) {
+                        this.data.push({
+                            time: '09:00', title: iterator.MovementType, description: iterator.LocationName + ", by " + iterator.OperatorName + ", quantity " + iterator.Quantity
+                        });
+                    }
+                    this.setState({timeline: this.data});
+                   }).catch(error => console.log(error));
+    }
     
     render(){
+        showPrimary = () => {
+            if(this.state.type === 'Buffer'){
+                return (
+                    <Card>
+                        <CardItem>
+                            <View>
+                                <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                        ID: 
+                                    </Text>
+                                    <Right>
+                                        <Text style={{fontSize: 13, fontWeight: '400'}}>
+                                            {this.state.itemId}
+                                        </Text>
+                                    </Right>
+                                </View>
+                                <View style={{flexDirection: 'row', alignItems:'center'}} >
+                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                        Location: 
+                                    </Text>
+                                    <Right>
+                                        <Text style={{fontSize: 13, fontWeight: '400'}}>
+                                            Some dummy text
+                                        </Text>
+                                    </Right>
+                                </View>
+                                <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                        Quantity: 
+                                    </Text>
+                                    <Right>
+                                        <Text style={{fontSize: 13, fontWeight: '400'}}>
+                                            Some dummy text
+                                        </Text>
+                                    </Right>
+                                </View>
+                                <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                    <Text style={{fontSize: 15, fontWeight: '500'}}>
+                                        Primary Buffer: 
+                                    </Text>
+                                    <Text style={{fontSize: 13, fontWeight: '400', marginLeft: 20}}>
+                                        Some dummy Id
+                                    </Text>
+                                </View>
+                            </View>
+                        </CardItem>
+                    </Card>
+                );
+            }            
+            else{
+                return null;
+            }
+        }
+        partsInformation = () => {
+            if(this.state.type === 'Part'){
+                return (
+                    <View>
+                        <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
+                            Parts Information
+                        </Text>
+                        <Card>
+                            <CardItem>
+                                <View style={{flex: 1}}>
+                                    <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                        <Text style={{fontSize: 17, fontWeight: '600'}}>
+                                            ID: 
+                                        </Text>
+                                        <Text style={{fontSize: 15, fontWeight: '400', marginLeft: 20}}>
+                                            {this.state.itemId}
+                                        </Text>
+                                    </View>
+                                    <View style={{flexDirection: 'row'}}>
+                                    <Text style={{fontSize: 17, fontWeight: '600'}}>
+                                            Total: 
+                                        </Text>
+                                        <Text style={{fontSize: 15, fontWeight: '400', marginLeft: 20}}>
+                                            {this.state.parts.total}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </CardItem>
+                        </Card>
+                        <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
+                            Status
+                        </Text>
+                        <Card>
+                            <View style={{flex: 1, padding: 10}}>
+                                <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                    <Text style={{fontSize: 17, fontWeight: '600'}}>
+                                        Total Orders: 50
+                                    </Text>
+                                </View>
+                                <View style={{flexDirection: 'row', padding: 10, paddingLeft: 20, paddingRight: 20,flex: 1, justifyContent: 'space-between'}}>
+                                    <View style={{alignItems: 'flex-start'}}>
+                                        <Text style={styles.quantityHeader}>Picked</Text>
+                                        <ProgressCircle
+                                            percent={60}
+                                            radius={50}
+                                            borderWidth={8}
+                                            color="#3399FF"
+                                            shadowColor="#999"
+                                            bgColor="#fff">
+                                                <Text style={{ fontSize: 18 }}>{'60%'}</Text>
+                                        </ProgressCircle>
+                                    </View>
+                                    <View style={{alignItems: 'flex-end'}}>
+                                        <Text style={styles.quantityHeader}>Packed</Text>
+                                        <ProgressCircle
+                                            percent={50}
+                                            radius={50}
+                                            borderWidth={8}
+                                            color="#ff9f1e"
+                                            shadowColor="#999"
+                                            bgColor="#fff">
+                                                <Text style={{ fontSize: 18 }}>{'50%'}</Text>
+                                        </ProgressCircle>
+                                    </View>
+                                </View>
+                            </View>
+                        </Card>
+                        <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
+                            Other Locations
+                        </Text>
+                        <Card>
+                            {this.state.parts.partsLocation.map((location) => {
+                                return (
+                                    <CardItem style={styles.borderStyle}>
+                                        <Text style={[{fontSize: 17, fontWeight: '500'}, styles.defaultFontFamily]}>{location.LocationName}</Text>
+                                        <Right>
+                                            <Text>{location.Quantity}</Text>
+                                        </Right>
+                                    </CardItem>
+                                );
+                            })}
+                        </Card>
+                    </View>
+                )
+            } 
+            return null;
+        }
         return(
             <ScrollView style={{backgroundColor: '#f1f1f1', flexGrow: 1}}>
             <View>
-                <Card>
-                <CardItem>
-                        <View>
-                            <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                    ID: 
-                                </Text>
-                                <Right>
-                                    <Text style={{fontSize: 13, fontWeight: '400'}}>
-                                        Some dummy text
-                                    </Text>
-                                </Right>
-                            </View>
-                            <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                    Location: 
-                                </Text>
-                                <Right>
-                                    <Text style={{fontSize: 13, fontWeight: '400'}}>
-                                        Some dummy text
-                                    </Text>
-                                </Right>
-                            </View>
-                            <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                    Quantity: 
-                                </Text>
-                                <Right>
-                                    <Text style={{fontSize: 13, fontWeight: '400'}}>
-                                        Some dummy text
-                                    </Text>
-                                </Right>
-                            </View>
-                            <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                    Primary Buffer: 
-                                </Text>
-                                <Text style={{fontSize: 13, fontWeight: '400', marginLeft: 20}}>
-                                    Some dummy Id
-                                </Text>
-                            </View>
-                        </View>
-                    </CardItem>
-                </Card>
-                <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
-                    Parts Information
-                </Text>
-                <Card>
-                    <CardItem>
-                        <View style={{flex: 1}}>
-                            <View style={{flexDirection: 'row', alignItems:'center'}}>
-                                <Text style={{fontSize: 20, fontWeight: '600'}}>
-                                    ID: 
-                                </Text>
-                                <Text style={{fontSize: 17, fontWeight: '400', marginLeft: 20}}>
-                                    Some dummy text
-                                </Text>
-                            </View>
-                            <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 10}}>
-                                <View style={{alignItems: 'flex-start'}}>
-                                    <Text style={styles.quantityHeader}>Total</Text>
-                                    <Text style={styles.quantityBody}>1000</Text>
-                                </View>
-                                <View>
-                                    <Text style={styles.quantityHeader}>In Bound</Text>
-                                    <Text style={styles.quantityBody}>1000</Text>
-                                </View>
-                                <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
-                                    <Text style={styles.quantityHeader}>Out Bound</Text>
-                                    <Text style={styles.quantityBody}>1000</Text>
-                                </View>
-                            </View>
-                        </View>
-                    </CardItem>
-                </Card>
-                <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
-                    Other Locations
-                </Text>
-                <Card>
-                    <CardItem style={styles.borderStyle}>
-                        <Text style={[{fontSize: 17, fontWeight: '500', color: '#07AEF1'}, styles.defaultFontFamily]}>Primary Location ID</Text>
-                        <Right>
-                            <Text>25/100</Text>
-                        </Right>
-                    </CardItem>
-                    <CardItem >
-                        <Text style={[{fontSize: 17, fontWeight: '500'}, styles.defaultFontFamily]}>Secondary Location ID</Text>
-                        <Right>
-                            <Text>25/100</Text>
-                        </Right>
-                    </CardItem>
-                    <CardItem >
-                        <Text style={[{fontSize: 17, fontWeight: '500'}, styles.defaultFontFamily]}>Secondary Location ID</Text>
-                        <Right>
-                            <Text>25/100</Text>
-                        </Right>
-                    </CardItem>
-                    <CardItem >
-                        <Text style={[{fontSize: 17, fontWeight: '500'}, styles.defaultFontFamily]}>Secondary Location ID</Text>
-                        <Right>
-                            <Text>25/100</Text>
-                        </Right>
-                    </CardItem>
-                    <CardItem >
-                        <Text style={[{fontSize: 17, fontWeight: '500'}, styles.defaultFontFamily]}>Secondary Location ID</Text>
-                        <Right>
-                            <Text>25/100</Text>
-                        </Right>
-                    </CardItem>
-                    <CardItem >
-                        <Text style={[{fontSize: 17, fontWeight: '500'}, styles.defaultFontFamily]}>Secondary Location ID</Text>
-                        <Right>
-                            <Text>70/100</Text>
-                        </Right>
-                    </CardItem>
-                    <CardItem >
-                        <Text style={[{fontSize: 17, fontWeight: '500'}, styles.defaultFontFamily]}>Secondary Location ID</Text>
-                        <Right>
-                            <Text>25/100</Text>
-                        </Right>
-                    </CardItem>                    
-                </Card>
+                {showPrimary()}
+                {partsInformation()}
                 <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
                     Time Line
                 </Text>
                 <Card>
                     <CardItem>
                         <Timeline
-                            data={this.data} showTime = {false} descriptionStyle={{color: 'gray', fontSize: 15}}/>
+                            data={this.state.timeline} showTime = {false} descriptionStyle={{color: 'gray', fontSize: 15}}/>
                     </CardItem>
                 </Card>              
             </View>            

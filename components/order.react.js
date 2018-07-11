@@ -37,7 +37,6 @@ export default class Order extends React.Component {
     }
 
     onSubmit = () => {
-        alert(JSON.stringify(this.state.formData))
         // this.props.navigation.navigate('Description', {title: 'Whatever'});
     }
 
@@ -97,7 +96,7 @@ export default class Order extends React.Component {
                     <Picker
                         mode="dropdown"
                         iosIcon={<Icon name="ios-arrow-down-outline" />}
-                        style={{ width: undefined }} onValueChange = {(itemValue, itemIndex) => }>
+                        style={{ width: undefined }}>
                             {this.state.locationForPart.map((picker) => {return <Picker.Item value={picker.PartNo} label={picker.LocationName} key={picker.ID}/>})}
                     </Picker>
                 </Item>
