@@ -8,8 +8,13 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 
 
 export default class ScanScreen extends React.Component {
+
+    constructor(){
+        super();
+    }
+
     onSuccess(e) {
-        alert('read');
+        this.props.onScan(e.data.itemId);
     }
     render() {
         return(

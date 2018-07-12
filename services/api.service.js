@@ -10,7 +10,16 @@ export function getPartsInfo(partNumber) {
 }
 
 export function sendMovementLog(data){
-    return axios.post('http://buffermanagementwebservice.azurewebsites.net/api/MovementLogs', data);
+    return axios.post('https://BufferManagementHub.azure-devices.net/devices/BufferMgtMobile/messages/events?api-version=2016-11-14', data, {
+        headers: {
+            'Authorization': {
+                toString() {
+                    return 'SharedAccessSignature sr=BufferManagementHub.azure-devices.net&sig=1n6lO/kutL4wQjOq5XwWTN5by/EChwFtCWtpv5FuoVI%3D&se=1562659722&skn=iothubowner&devices=BufferMgtMobile'
+                }
+            }, 
+            'Content-Type': 'application/json'
+        }
+    });
 }
 
 export function getAllMovementLog(){
@@ -27,4 +36,4 @@ export function getLocation(locationName){
             id: locationName
         }
     });
-}   
+}

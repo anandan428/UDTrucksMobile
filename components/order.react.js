@@ -2,6 +2,7 @@ import React from 'react';
 import {
     ScrollView,
     StyleSheet,
+    AsyncStorage,
     Text,
     View,
     TextInput,
@@ -19,10 +20,11 @@ export default class Order extends React.Component {
         this.state = {
             formData: {
                 PartNo: '',
-                MovementType: '',
+                MovementType: 'Outbound',
                 Quantity: '',
                 OperatorName: 'A242230',
-                isInbound: false
+                LocationName: '',
+                MovementTimeStamp: ''
             }, 
             locationForPart: [],
             isFocused: false
@@ -38,12 +40,23 @@ export default class Order extends React.Component {
     }
 
     onSubmit = () => {
-        // this.props.navigation.navigate('Description', {title: 'Whatever'});
+        let postData = JSON.parse(JSON.stringify(this.state.formData));
+        postData.Quantity = parseInt(postData.Quantity, 10);
+        let d = new Date();
+        postData.MovementTimeStamp = d.toISOString().split('T')[0];
+        if(this.state.formData.MovementType === 'Packed'){
+            postData.LocationName = 'Dispatch';
+        }
+        sendMovementLog(postData).then(data => {
+            alert('Data submitted');
+        }).catch(error => alert(JSON.stringify(error)));
     }
     
     componentDidMount() {
         this.props.navigation.addListener('didFocus', this._onFocus);
         this.props.navigation.addListener('didBlur', this._onBlur);
+        debugger;
+        this._getToken();
     }
 
     componentWillUnmount() {
@@ -51,37 +64,94 @@ export default class Order extends React.Component {
         this.props.navigation.removeListener('didBlur', this._onFocus);
     }
 
+    onScanned = (itemId) => {
+        let formData = JSON.parse(JSON.stringify(this.state.formData));
+        formData[PartNo] = text;
+        this.setState({
+            formData : formData
+        });
+    }
+
     _onFocus = () => {
+        // this._getToken();
         this.setState({isFocused: true});
       };
 
       _onBlur = () => {
         this.setState({isFocused: false});
       };
-
-    momentType = (type) => {
-        let formData = JSON.parse(JSON.stringify(this.state.formData));
-        formData.isInbound = type;
-        if(formData.isInbound){
-            formData.MovementType = 'OUTBOUND'
-        } else {
-            formData.MovementType = 'INBOUND'
-        }
-        this.setState({
-            formData: formData
-        });
+    _getToken = async () => {
+        const userToken = await AsyncStorage.getItem('userToken');
+        console.log('data' + userToken);
     }
-
+    // _getToken = async () => {
+    //     // debugger;
+    //     // const userToken = await AsyncStorage.getItem('userToken');
+    //     // if(!userToken){
+    //     //     this.props.navigation.navigate('Setting');
+    //     // }
+    // }
     onEditingOver = () => {
-        if(this.state.formData.Quantity && this.state.formData.PartNo){
-            getPartsInfo(this.state.formData.PartNo).then(data => {this.setState({locationForPart: data.data}); alert(JSON.stringify(this.state.locationForPart))}).catch((error) => alert(JSON.stringify(error)));
+        if(this.state.formData.Quantity && this.state.formData.PartNo && this.state.formData.MovementType !== 'Packed'){
+            getPartsInfo(this.state.formData.PartNo).then(data => 
+                {
+                    debugger;
+                    let records = data.data.filter(element => element.Quantity > parseInt(this.state.formData.Quantity), 10);
+                    if(records.length > 0){
+                        this.setState({locationForPart: records});
+                        let formData = JSON.parse(JSON.stringify(this.state.formData));
+                        formData.LocationName = records[0].LocationName;
+                        this.setState({formData: formData});
+                    } else {
+                        alert('No buffer with required capacity found')
+                    }
+                }).catch((error) => alert(JSON.stringify(error)));
+        } else if(this.state.formData.MovementType === 'Packed'){
+            let formData = JSON.parse(JSON.stringify(this.state.formData));
+            formData.LocationName = 'Dispatch';
+            this.setState({formData: formData});
         }
     }
-
+    onLocationChange = (val) => {
+        debugger;
+        let formData = JSON.parse(JSON.stringify(this.state.formData));
+        formData.LocationName = val;
+        this.setState({formData: formData});
+    }
     render(){
         displayCamera = () => {
             if(this.state.isFocused){
-                return(<ScanScreen />);
+                return(<ScanScreen onScan = {this.onScanned}/>);
+            } else {
+                return null;
+            }
+        }
+        movementDisplayName = () => {
+            switch(this.state.formData.MovementType){
+                case 'Inbound': return 'Binning';
+                case 'Outbound': return 'Picking';
+                case 'Packed': return 'Packing';
+            }
+            return null;
+        }
+        showLocation = () => {
+            if(this.state.formData.MovementType === 'Inbound' || this.state.formData.MovementType === 'Outbound'){
+                return(
+                    <View>
+                        <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Location</Text>
+                        <Item picker>
+                            <Picker
+                                mode="dropdown"
+                                iosIcon={<Icon name="ios-arrow-down-outline" />}
+                                style={{ width: undefined }}
+                                selectedValue = {this.state.formData.LocationName}
+                                onValueChange = {this.onLocationChange}
+                                >
+                                    {this.state.locationForPart.map((picker) => {return <Picker.Item value={picker.LocationName} label={picker.LocationName} key={picker.ID}/>})}
+                            </Picker>
+                        </Item>
+                    </View>
+                );
             } else {
                 return null;
             }
@@ -95,7 +165,7 @@ export default class Order extends React.Component {
                 <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 5, height: 40}}>
                     <Input onChangeText={(text) => this.onInputChange(text, 'PartNo')} onEndEditing={this.onEditingOver} value={this.state.formData.PartNo}/>
                 </Item>
-                <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Moment Type: Picking</Text>
+                <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Movement Type: {movementDisplayName()}</Text>
                 <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5}}>
                     <View style={{alignItems: 'flex-start'}}>
                         <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Quantity</Text>
@@ -106,21 +176,13 @@ export default class Order extends React.Component {
                     <View >
                         <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>User ID</Text>
                         <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 5, height: 40, width: 200}}>
-                            <Input disabled = {true} onChangeText={(text) => this.onInputChange(text, 'OperatorName')} value={this.state.formData.OperatorName}/>
+                            <Input disabled = {true} onChangeText={(text) => this.onInputChange(text, 'OperatorName')} value={this.state.formData.OperatorName} keyboardType='numeric'/>
                         </Item>
                     </View>
                     <View>
                     </View>
                 </View>
-                <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Location</Text>
-                <Item picker>
-                    <Picker
-                        mode="dropdown"
-                        iosIcon={<Icon name="ios-arrow-down-outline" />}
-                        style={{ width: undefined }}>
-                            {this.state.locationForPart.map((picker) => {return <Picker.Item value={picker.PartNo} label={picker.LocationName} key={picker.ID}/>})}
-                    </Picker>
-                </Item>
+                {showLocation()}
                 <View style={{justifyContent: 'center', alignItems:'center', alignSelf: 'stretch', flexDirection: 'row', marginTop: 20}}>
                     <Button rounded style={{justifyContent: 'center', alignItems:'center', width: 250}} onPress={this.onSubmit}>
                         <Text style={{color: '#fff', padding: 5}}>SUBMIT</Text>
