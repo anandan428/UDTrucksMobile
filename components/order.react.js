@@ -24,7 +24,8 @@ export default class Order extends React.Component {
                 OperatorName: 'A242230',
                 isInbound: false
             }, 
-            locationForPart: []
+            locationForPart: [],
+            isFocused: false
         }
     }
 
@@ -39,6 +40,24 @@ export default class Order extends React.Component {
     onSubmit = () => {
         // this.props.navigation.navigate('Description', {title: 'Whatever'});
     }
+    
+    componentDidMount() {
+        this.props.navigation.addListener('didFocus', this._onFocus);
+        this.props.navigation.addListener('didBlur', this._onBlur);
+    }
+
+    componentWillUnmount() {
+        this.props.navigation.removeListener('didFocus', this._onBlur);
+        this.props.navigation.removeListener('didBlur', this._onFocus);
+    }
+
+    _onFocus = () => {
+        this.setState({isFocused: true});
+      };
+
+      _onBlur = () => {
+        this.setState({isFocused: false});
+      };
 
     momentType = (type) => {
         let formData = JSON.parse(JSON.stringify(this.state.formData));
@@ -60,9 +79,16 @@ export default class Order extends React.Component {
     }
 
     render(){
+        displayCamera = () => {
+            if(this.state.isFocused){
+                return(<ScanScreen />);
+            } else {
+                return null;
+            }
+        }
         return(
            <ScrollView contentContainerStyle={{ padding: 10}}>
-               <ScanScreen />
+               {displayCamera()}
                <View style={{padding: 10}}>
                 <Text style={{fontSize: 19, marginTop: 15, fontWeight: '600', alignSelf: 'center'}}> OR </Text>
                 <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Part ID</Text>
