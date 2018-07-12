@@ -8,13 +8,17 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 
 
 export default class ScanScreen extends React.Component {
+
+    constructor(){
+        super();
+    }
     onSuccess(e) {
-        alert('read');
+        this.props.onScan(JSON.parse(e.data));
     }
     render() {
         return(
             <QRCodeScanner
-                onRead = {this.onSuccess}
+                onRead = {(e) => this.onSuccess(e)}
                 cameraStyle = {{width: 300, height: 250}}
                 containerStyle={{alignItems: 'center', justifyContent: 'flex-start'}}
             />

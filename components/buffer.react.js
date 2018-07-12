@@ -52,10 +52,15 @@ export default class Buffers extends React.Component {
       _onBlur = () => {
         this.setState({isFocused: false});
     };
+
+    onScanned = (value) => {
+        this.setState({itemID: value.itemId});
+    }
+    
     render(){
         displayCamera = () => {
             if(this.state.isFocused){
-                return(<ScanScreen />);
+                return(<ScanScreen onScan= {this.onScanned}/>);
             } else {
                 return null;
             }

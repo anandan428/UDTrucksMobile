@@ -53,10 +53,14 @@ export default class Parts extends React.Component {
         this.setState({isFocused: false});
     };
 
+    onScanned = (value) => {
+        this.setState({itemID: value.itemId});
+    }
+
     render(){
         displayCamera = () => {
             if(this.state.isFocused){
-                return(<ScanScreen />);
+                return(<ScanScreen onScan= {this.onScanned}/>);
             } else {
                 return null;
             }

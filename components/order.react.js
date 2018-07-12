@@ -5,7 +5,8 @@ import {
     Text,
     View,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    AsyncStorage
 } from 'react-native';
 import ScanScreen from '../containers/BarCodeScanner.react';
 import { Item, Input, Button, Switch, Picker } from 'native-base';
@@ -16,6 +17,8 @@ export default class Order extends React.Component {
 
     constructor(){
         super();
+        this.blurListener;
+        this.focusListener;
         this.state = {
             formData: {
                 PartNo: '',
@@ -42,17 +45,27 @@ export default class Order extends React.Component {
     }
     
     componentDidMount() {
-        this.props.navigation.addListener('didFocus', this._onFocus);
-        this.props.navigation.addListener('didBlur', this._onBlur);
+        this.focusListener = this.props.navigation.addListener('didFocus', this._onFocus);
+        this.blurListener = this.props.navigation.addListener('didBlur', this._onBlur);
+        
     }
 
     componentWillUnmount() {
-        this.props.navigation.removeListener('didFocus', this._onBlur);
-        this.props.navigation.removeListener('didBlur', this._onFocus);
+        this.focusListener.remove();
+        this.blurListener.remove();
     }
 
     _onFocus = () => {
-        this.setState({isFocused: true});
+        debugger;
+        AsyncStorage.getItem('userToken').then(data => {
+            if(data){
+                debugger;
+                alert(JSON.stringify(data));
+                this.setState({isFocused: true});
+            } else {
+                this.props.navigation.navigate('Setting');
+            }
+        }).catch(error => alert(error));
       };
 
       _onBlur = () => {
@@ -78,10 +91,18 @@ export default class Order extends React.Component {
         }
     }
 
+    onScanned = (value) => {
+        let formData = JSON.parse(JSON.stringify(this.state.formData));
+        formData.PartNo = value.itemId;
+        this.setState({formData: formData});
+    }
+
+
+
     render(){
         displayCamera = () => {
             if(this.state.isFocused){
-                return(<ScanScreen />);
+                return(<ScanScreen onScan= {this.onScanned}/>);
             } else {
                 return null;
             }
