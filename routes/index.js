@@ -44,7 +44,7 @@ export const DefaultRoute = createStackNavigator(
         tabBarComponent: TabBarBottom,
         tabBarPosition: 'bottom',
         tabBarOptions: {
-          activeTintColor: '#2E86C1',
+          activeTintColor: 'rgba(210, 10, 15, 1)',
           inactiveTintColor: 'grey',
           labelStyle: {
             fontSize: 12
@@ -62,7 +62,7 @@ export const DefaultRoute = createStackNavigator(
     navigationOptions:{
       title: 'Buffer Managment',
       headerStyle: {
-        backgroundColor: '#2E86C1',
+        backgroundColor: 'rgba(210, 10, 15, 1)',
         elevation: 0
       },
       headerTintColor: '#fff',

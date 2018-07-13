@@ -17,6 +17,8 @@ export default class Order extends React.Component {
 
     constructor(){
         super();
+        this.blurListener;
+        this.focusListener;
         this.state = {
             formData: {
                 PartNo: '',
@@ -53,15 +55,14 @@ export default class Order extends React.Component {
     }
     
     componentDidMount() {
-        this.props.navigation.addListener('didFocus', this._onFocus);
-        this.props.navigation.addListener('didBlur', this._onBlur);
-        debugger;
+        this.focusListener = this.props.navigation.addListener('didFocus', this._onFocus);
+        this.blurListener = this.props.navigation.addListener('didBlur', this._onBlur);
         this._getToken();
     }
 
     componentWillUnmount() {
-        this.props.navigation.removeListener('didFocus', this._onBlur);
-        this.props.navigation.removeListener('didBlur', this._onFocus);
+        this.focusListener.remove();
+        this.blurListener.remove();
     }
 
     onScanned = (itemId) => {
@@ -74,12 +75,25 @@ export default class Order extends React.Component {
 
     _onFocus = () => {
         // this._getToken();
-        this.setState({isFocused: true});
-      };
+        AsyncStorage.getItem('userToken').then(data => {
+            if(data){
+                debugger;
+                let pdata = JSON.parse(data)
+                let formData = JSON.parse(JSON.stringify(this.state.formData));
+                formData.MovementType = pdata.role;
+                formData.OperatorName = pdata.userId;
+                this.setState({formData: formData});
+                this.setState({isFocused: true});
+            } else {
+                this.props.navigation.navigate('Setting');
+            }
+        }).catch(error => alert(error));
+    };
 
-      _onBlur = () => {
+    _onBlur = () => {
         this.setState({isFocused: false});
-      };
+    };
+    
     _getToken = async () => {
         const userToken = await AsyncStorage.getItem('userToken');
         console.log('data' + userToken);
@@ -118,10 +132,16 @@ export default class Order extends React.Component {
         formData.LocationName = val;
         this.setState({formData: formData});
     }
+
+    onScanned = (value) => {
+        let formData = JSON.parse(JSON.stringify(this.state.formData));
+        formData.PartNo = value.itemId;
+        this.setState({formData: formData});
+    }
     render(){
         displayCamera = () => {
             if(this.state.isFocused){
-                return(<ScanScreen onScan = {this.onScanned}/>);
+                return(<ScanScreen onScan= {this.onScanned}/>);
             } else {
                 return null;
             }
@@ -134,6 +154,7 @@ export default class Order extends React.Component {
             }
             return null;
         }
+
         showLocation = () => {
             if(this.state.formData.MovementType === 'Inbound' || this.state.formData.MovementType === 'Outbound'){
                 return(
@@ -184,7 +205,7 @@ export default class Order extends React.Component {
                 </View>
                 {showLocation()}
                 <View style={{justifyContent: 'center', alignItems:'center', alignSelf: 'stretch', flexDirection: 'row', marginTop: 20}}>
-                    <Button rounded style={{justifyContent: 'center', alignItems:'center', width: 250}} onPress={this.onSubmit}>
+                    <Button rounded style={{justifyContent: 'center', alignItems:'center', width: 250, backgroundColor: 'rgba(210, 10, 15, 1)'}} onPress={this.onSubmit}>
                         <Text style={{color: '#fff', padding: 5}}>SUBMIT</Text>
                     </Button>
                 </View>

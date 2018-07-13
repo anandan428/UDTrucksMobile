@@ -11,15 +11,18 @@ export default class ScanScreen extends React.Component {
 
     constructor(){
         super();
+        this.scanner;
     }
 
     onSuccess(e) {
-        this.props.onScan(e.data.itemId);
+        this.props.onScan(JSON.parse(e.data));
+        this.scanner.reactivate();
     }
     render() {
         return(
             <QRCodeScanner
-                onRead = {this.onSuccess}
+                ref = {(node) => { this.scanner = node }}
+                onRead = {(e) => this.onSuccess(e)}
                 cameraStyle = {{width: 300, height: 250}}
                 containerStyle={{alignItems: 'center', justifyContent: 'flex-start'}}
             />

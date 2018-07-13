@@ -10,6 +10,11 @@ import {
 import { DefaultRoute } from './routes';
 
 export default class App extends React.Component{
+  constructor(){
+    super()
+    console.disableYellowBox = true;
+  }
+
   render(){
     return (
       <DefaultRoute />

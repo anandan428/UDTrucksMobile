@@ -52,10 +52,15 @@ export default class Buffers extends React.Component {
       _onBlur = () => {
         this.setState({isFocused: false});
     };
+
+    onScanned = (value) => {
+        this.setState({itemID: value.itemId});
+    }
+
     render(){
         displayCamera = () => {
             if(this.state.isFocused){
-                return(<ScanScreen />);
+                return(<ScanScreen onScan= {this.onScanned}/>);
             } else {
                 return null;
             }
@@ -67,10 +72,10 @@ export default class Buffers extends React.Component {
                 <Text style={{fontSize: 19, marginTop: 15, fontWeight: '600', alignSelf: 'center'}}> OR </Text>
                 <Text style={{justifyContent: 'flex-start', fontSize: 19, color: 'black', fontWeight: '500', marginTop: 20}}>Part/ Buffer ID</Text>
                 <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 10}}>
-                    <Input onChangeText={this.onInputChange} />
+                    <Input onChangeText={this.onInputChange} value = {this.state.itemID}/>
                 </Item>
                 <View style={{justifyContent: 'center', alignItems:'center', alignSelf: 'stretch', flexDirection: 'row', marginTop: 20}}>
-                    <Button rounded style={{justifyContent: 'center', alignItems:'center', width: 250}} onPress={this.onSubmit}>
+                    <Button rounded style={{justifyContent: 'center', alignItems:'center', width: 250, backgroundColor: 'rgba(210, 10, 15, 1)'}} onPress={this.onSubmit}>
                         <Text style={{color: '#fff', padding: 5}}>SUBMIT</Text>
                     </Button>
                 </View>
