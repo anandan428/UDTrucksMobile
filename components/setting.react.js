@@ -5,7 +5,8 @@ import {
     Text,
     AsyncStorage,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    AsyncStorage
 } from 'react-native';
 import { Item, Input, Button, Switch, Picker, Card, CardItem } from 'native-base';
 import Icon from 'react-native-vector-icons/Ionicons';

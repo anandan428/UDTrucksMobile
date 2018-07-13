@@ -6,7 +6,8 @@ import {
     Text,
     View,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    AsyncStorage
 } from 'react-native';
 import ScanScreen from '../containers/BarCodeScanner.react';
 import { Item, Input, Button, Switch, Picker } from 'native-base';
