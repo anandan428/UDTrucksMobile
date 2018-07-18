@@ -89,7 +89,7 @@ export default class Order extends React.Component {
     
                 }).catch(error => alert("Error Occured"));
             }
-
+            alert('Data submitted');
         }
         if(this.state.formData.MovementType === 'Outbound'){
             if(this.state.totalEO > 0 && this.state.pickedEO < this.state.totalEO){
@@ -127,8 +127,8 @@ export default class Order extends React.Component {
     
                 }).catch(error => alert("Error Occured"));
             }
+            alert('Data submitted');
         }        
-        alert('Data submitted');
         if(totalQty > 0){
             alert("Extra parts picked");
         }
