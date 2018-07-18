@@ -15,7 +15,7 @@ export default class ScanScreen extends React.Component {
     }
 
     onSuccess(e) {
-        this.props.onScan(JSON.parse(e.data));
+        this.props.onScan(e.data);
         this.scanner.reactivate();
     }
     render() {

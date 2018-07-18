@@ -69,7 +69,6 @@ export default class Descriptions extends React.Component {
                     let buffers = JSON.parse(JSON.stringify(this.state.buffers));
                     buffers.bufferInfos = records;
                     this.setState({buffers: buffers});
-
                 }).catch(error => {
                     Alert.alert(
                         'Not Found',
@@ -101,14 +100,14 @@ export default class Descriptions extends React.Component {
                 return (
                     <View>
                         <Text style={[{padding: 10, fontSize: 20, color: '#373737'}, styles.defaultFontFamily]}>
-                            Buffer Information
+                            Location Information
                         </Text>
                         <Card>
                             <CardItem>
-                                <View>
+                                <View style={{flex: 1}}>
                                     <View style={{flexDirection: 'row', alignItems:'center'}}>
                                         <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                            ID: 
+                                            Location ID: 
                                         </Text>
                                         <Right>
                                             <Text style={{fontSize: 13, fontWeight: '400'}}>
@@ -128,7 +127,7 @@ export default class Descriptions extends React.Component {
                                     </View>
                                     <View style={{flexDirection: 'row', alignItems:'center'}}>
                                         <Text style={{fontSize: 15, fontWeight: '500'}}>
-                                            Quantity: 
+                                            Capacity: 
                                         </Text>
                                         <Right>
                                             <Text style={{fontSize: 13, fontWeight: '400'}}>
@@ -136,14 +135,14 @@ export default class Descriptions extends React.Component {
                                             </Text>
                                         </Right>
                                     </View>
-                                    <View style={{flexDirection: 'row', alignItems:'center'}}>
+                                    {/* <View style={{flexDirection: 'row', alignItems:'center'}}>
                                         <Text style={{fontSize: 15, fontWeight: '500'}}>
                                             Primary Buffer: 
                                         </Text>
                                         <Text style={{fontSize: 13, fontWeight: '400', marginLeft: 20}}>
                                             {this.state.buffers.bufferInfos.AssociatedPrimeLocation ? this.state.buffers.bufferInfos.AssociatedPrimeLocation : 'No prime location'}
                                         </Text>
-                                    </View>
+                                    </View> */}
                                 </View>
                             </CardItem>
                         </Card>
@@ -154,19 +153,19 @@ export default class Descriptions extends React.Component {
                             <View style={{flexDirection: 'row', flex: 1, padding: 20}}>
                                 <View>
                                     <ProgressCircle
-                                                percent={this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity}
+                                                percent={((this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity) / this.state.buffers.bufferInfos.Capacity) * 100}
                                                 radius={50}
                                                 borderWidth={8}
                                                 color="#3399FF"
                                                 shadowColor="#999"
                                                 bgColor="#fff">
-                                                    <Text style={{ fontSize: 18 }}>{this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity}</Text>
+                                                    <Text style={{ fontSize: 18 }}>{(((this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity) / this.state.buffers.bufferInfos.Capacity) * 100) + '%'}</Text>
                                     </ProgressCircle>
                                 </View>
                                 <View style={{marginLeft: 20}}>
                                     <Text style={{fontSize: 17, fontWeight: '500'}}>Total Capacity: {this.state.buffers.bufferInfos.Capacity}</Text>
                                     <Text style={{fontSize: 15, fontWeight: '500'}}>Available Capacity: {this.state.buffers.bufferInfos.AvailableCapacity}</Text>
-                                    <Text style={{fontSize: 15, fontWeight: '500'}}>Filled Capacity: {this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity + '%'}</Text>
+                                    <Text style={{fontSize: 15, fontWeight: '500'}}>Filled Capacity: {this.state.buffers.bufferInfos.Capacity - this.state.buffers.bufferInfos.AvailableCapacity}</Text>
                                 </View>
                             </View>
                         </Card>
@@ -294,7 +293,6 @@ const styles = StyleSheet.create({
         color: '#777777'
     },
     defaultFontFamily: {
-        fontFamily: '-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     },
     borderStyle: {
         borderBottomColor:'grey', 

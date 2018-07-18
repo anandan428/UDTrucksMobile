@@ -67,7 +67,6 @@ export const DefaultRoute = createStackNavigator(
       },
       headerTintColor: '#fff',
       headerTitleStyle: {
-        fontFamily: '-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         fontWeight: '400',
         color: '#fff'
       }

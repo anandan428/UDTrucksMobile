@@ -3,7 +3,6 @@ import {
     View,
     StyleSheet,
     Text,
-    AsyncStorage,
     TextInput,
     TouchableOpacity,
     AsyncStorage
@@ -54,7 +53,6 @@ export default class Settings extends React.Component {
 
 
     updateRole = (value) => {
-        debugger;
         let userInfo = JSON.parse(JSON.stringify(this.state.userInfo));
         userInfo.role = value;
         this.setState({userInfo: userInfo});

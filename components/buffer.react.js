@@ -54,7 +54,7 @@ export default class Buffers extends React.Component {
     };
 
     onScanned = (value) => {
-        this.setState({itemID: value.itemId});
+        this.setState({itemID: value});
     }
     render(){
         displayCamera = () => {
@@ -69,7 +69,7 @@ export default class Buffers extends React.Component {
                {displayCamera()}
                <View style={{padding: 10}}>
                 <Text style={{fontSize: 19, marginTop: 15, fontWeight: '600', alignSelf: 'center'}}> OR </Text>
-                <Text style={{justifyContent: 'flex-start', fontSize: 19, color: 'black', fontWeight: '500', marginTop: 20}}>Part/ Buffer ID</Text>
+                <Text style={{justifyContent: 'flex-start', fontSize: 19, color: 'black', fontWeight: '500', marginTop: 20}}>Location ID</Text>
                 <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 10}}>
                     <Input onChangeText={this.onInputChange} value = {this.state.itemID}/>
                 </Item>

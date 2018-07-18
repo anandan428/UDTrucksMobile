@@ -6,13 +6,12 @@ import {
     Text,
     View,
     TextInput,
-    TouchableOpacity,
-    AsyncStorage
+    TouchableOpacity
 } from 'react-native';
 import ScanScreen from '../containers/BarCodeScanner.react';
 import { Item, Input, Button, Switch, Picker } from 'native-base';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { getPartsInfo, sendMovementLog } from '../services/api.service'
+import { getPartsInfo, sendMovementLog, getPossOrderbyptno, getMovementLogInfobyDate } from '../services/api.service'
 
 export default class Order extends React.Component {
 
@@ -27,10 +26,17 @@ export default class Order extends React.Component {
                 Quantity: '',
                 OperatorName: 'A242230',
                 LocationName: '',
+                PrimaryName: '',
                 MovementTimeStamp: ''
             }, 
             locationForPart: [],
-            isFocused: false
+            isFocused: false,
+            totalEO: 0,
+            totalAO: 0,
+            pickedEO: 0,
+            pickedAO: 0,
+            packedAO: 0,
+            packedEO: 0
         }
     }
 
@@ -43,16 +49,89 @@ export default class Order extends React.Component {
     }
 
     onSubmit = () => {
-        let postData = JSON.parse(JSON.stringify(this.state.formData));
-        postData.Quantity = parseInt(postData.Quantity, 10);
+        debugger;
+        let totalQty = parseInt(this.state.formData.Quantity, 10);
         let d = new Date();
-        postData.MovementTimeStamp = d.toISOString().split('T')[0];
         if(this.state.formData.MovementType === 'Packed'){
-            postData.LocationName = 'Dispatch';
+            if(this.state.totalEO > 0 && this.state.packedEO < this.state.totalEO){
+                let postData = JSON.parse(JSON.stringify(this.state.formData));
+                postData.MovementTimeStamp = d.toISOString().split('T')[0];
+                postData.OrderType = 'EO';
+                postData.LocationName = 'Dispatch';
+                let eoQty = 0;
+                if((this.state.totalEO - this.state.packedEO) >= totalQty){
+                    eoQty = postData.Quantity = totalQty;
+                }
+                else{
+                    eoQty = postData.Quantity = (this.state.totalEO - this.state.packedEO);
+                }
+                totalQty -= eoQty;
+                let records = this.state.locationForPart.filter(ele => ele.Quantity >= eoQty);
+                postData.LocationName = records[0].LocationName;
+                sendMovementLog(postData).then(data => {
+    
+                }).catch(error => alert("Error Occured"));
+            }
+            if(totalQty > 0 && this.state.totalAO > 0 && this.state.packedAO < this.state.totalAO){
+                let aoData  = JSON.parse(JSON.stringify(this.state.formData));
+                aoData.MovementTimeStamp = d.toISOString().split('T')[0];
+                aoData.OrderType = 'AO';
+                let aoQty = 0;
+                if((this.state.totalAO - this.state.packedAO) >= totalQty){
+                    aoQty = aoData.Quantity = totalQty;
+                } else {
+                    aoQty = aoData.Quantity = (this.state.totalAO - this.state.packedAO);
+                }
+                totalQty -= aoQty;
+                let records = this.state.locationForPart.filter(ele => ele.Quantity >= aoQty);
+                aoData.LocationName = records[0].LocationName;
+                sendMovementLog(aoData).then(data => {
+    
+                }).catch(error => alert("Error Occured"));
+            }
+
         }
-        sendMovementLog(postData).then(data => {
-            alert('Data submitted');
-        }).catch(error => alert(JSON.stringify(error)));
+        if(this.state.formData.MovementType === 'Outbound'){
+            if(this.state.totalEO > 0 && this.state.pickedEO < this.state.totalEO){
+                let postData = JSON.parse(JSON.stringify(this.state.formData));
+                postData.MovementTimeStamp = d.toISOString().split('T')[0];
+                postData.OrderType = 'EO';
+                let eoQty = 0;
+                if((this.state.totalEO - this.state.pickedEO) >= totalQty){
+                    eoQty = postData.Quantity = totalQty;
+                }
+                else{
+                    eoQty = postData.Quantity = (this.state.totalEO - this.state.pickedEO);
+                }
+                totalQty -= eoQty;
+                let records = this.state.locationForPart.filter(ele => ele.Quantity >= eoQty);
+                postData.LocationName = records[0].LocationName;
+                sendMovementLog(postData).then(data => {
+    
+                }).catch(error => alert("Error Occured"));
+            }
+            if(totalQty > 0 && this.state.totalAO > 0 && this.state.pickedAO < this.state.totalAO){
+                let aoData  = JSON.parse(JSON.stringify(this.state.formData));
+                aoData.MovementTimeStamp = d.toISOString().split('T')[0];
+                aoData.OrderType = 'AO';
+                let aoQty = 0;
+                if((this.state.totalAO - this.state.pickedAO) >= totalQty){
+                    aoQty = aoData.Quantity = totalQty;
+                } else {
+                    aoQty = aoData.Quantity = (this.state.totalAO - this.state.pickedAO);
+                }
+                totalQty -= aoQty;
+                let records = this.state.locationForPart.filter(ele => ele.Quantity >= aoQty);
+                aoData.LocationName = records[0].LocationName;
+                sendMovementLog(aoData).then(data => {
+    
+                }).catch(error => alert("Error Occured"));
+            }
+        }        
+        alert('Data submitted');
+        if(totalQty > 0){
+            alert("Extra parts picked");
+        }
     }
     
     componentDidMount() {
@@ -75,10 +154,8 @@ export default class Order extends React.Component {
     }
 
     _onFocus = () => {
-        // this._getToken();
         AsyncStorage.getItem('userToken').then(data => {
             if(data){
-                debugger;
                 let pdata = JSON.parse(data)
                 let formData = JSON.parse(JSON.stringify(this.state.formData));
                 formData.MovementType = pdata.role;
@@ -99,27 +176,66 @@ export default class Order extends React.Component {
         const userToken = await AsyncStorage.getItem('userToken');
         console.log('data' + userToken);
     }
-    // _getToken = async () => {
-    //     // debugger;
-    //     // const userToken = await AsyncStorage.getItem('userToken');
-    //     // if(!userToken){
-    //     //     this.props.navigation.navigate('Setting');
-    //     // }
-    // }
     onEditingOver = () => {
+        debugger;
+        if(this.state.formData.PartNo){
+            getPossOrderbyptno(this.state.formData.PartNo, new Date().toISOString().split('T')[0]).then(data => {
+                let records = data.data;
+                if(records.length > 0){
+                    let picktotalEO = 0;
+                    let picktotalAO = 0;
+                    let packtotalAO = 0;
+                    let packtotalEO = 0;
+                    for (const iterator of records) {
+                        if(iterator.OrderType === 'EO'){
+                            if(iterator.MovementType === 'Outbound')
+                                picktotalEO += iterator.Quantity;
+                            else if(iterator.MovementType === 'Packed')
+                                packtotalEO += iterator.Quantity;
+                        } else if(iterator.OrderType === 'AO'){
+                            if(iterator.MovementType === 'Outbound')
+                                picktotalAO += iterator.Quantity;
+                            else if(iterator.MovementType === 'Packed')
+                                packtotalAO += iterator.Quantity;
+                        }
+                    }
+                    this.setState({totalAO: picktotalAO});
+                    this.setState({totalEO: picktotalEO});
+                    this.setState({packedAO: packtotalAO});
+                    this.setState({packedEO: packtotalAO})
+                }
+            });
+            getMovementLogInfobyDate(this.state.formData.PartNo, new Date().toISOString().split('T')[0]).then(data => {
+                let records = data.data;
+                if(records.length > 0){
+                    let mvTotalEO = 0;
+                    let mvTotalAO = 0;
+                    for (const iterator of records) {
+                        if(iterator.MovementType === 'Outbound'){
+                            if(iterator.OrderType === 'EO'){
+                                mvTotalEO += iterator.Quantity;
+                            } else if(iterator.OrderType === 'AO'){
+                                mvTotalAO += iterator.Quantity;
+                            }
+                        }                       
+                    }
+                    this.setState({pickedEO: mvTotalEO});
+                    this.setState({pickedAO: mvTotalAO});
+                }
+            })
+        }
         if(this.state.formData.Quantity && this.state.formData.PartNo && this.state.formData.MovementType !== 'Packed'){
             getPartsInfo(this.state.formData.PartNo).then(data => 
                 {
-                    debugger;
-                    let records = data.data.filter(element => element.Quantity > parseInt(this.state.formData.Quantity), 10);
-                    if(records.length > 0){
-                        this.setState({locationForPart: records});
+                    if(data.data.length > 0){
+                        this.setState({locationForPart : data.data});
+                        // let records = data.data.filter(element => element.Quantity > parseInt(this.state.formData.Quantity), 10);
                         let formData = JSON.parse(JSON.stringify(this.state.formData));
-                        formData.LocationName = records[0].LocationName;
+                        formData.PrimaryName = data.data[0].LocationName;
                         this.setState({formData: formData});
                     } else {
-                        alert('No buffer with required capacity found')
-                    }
+                        alert("No location with required capacity found");
+                    }                    
                 }).catch((error) => alert(JSON.stringify(error)));
         } else if(this.state.formData.MovementType === 'Packed'){
             let formData = JSON.parse(JSON.stringify(this.state.formData));
@@ -128,7 +244,6 @@ export default class Order extends React.Component {
         }
     }
     onLocationChange = (val) => {
-        debugger;
         let formData = JSON.parse(JSON.stringify(this.state.formData));
         formData.LocationName = val;
         this.setState({formData: formData});
@@ -136,7 +251,7 @@ export default class Order extends React.Component {
 
     onScanned = (value) => {
         let formData = JSON.parse(JSON.stringify(this.state.formData));
-        formData.PartNo = value.itemId;
+        formData.PartNo = value;
         this.setState({formData: formData});
     }
     render(){
@@ -161,8 +276,8 @@ export default class Order extends React.Component {
                 return(
                     <View>
                         <Text style={{justifyContent: 'flex-start', fontSize: 17, color: 'black', fontWeight: '500', marginTop: 20}}>Location</Text>
-                        <Item picker>
-                            <Picker
+                        <Item rounded style={{borderColor: '#5c5b5a', backgroundColor: 'white', marginTop: 5, height: 40}}>
+                            {/* <Picker
                                 mode="dropdown"
                                 iosIcon={<Icon name="ios-arrow-down-outline" />}
                                 style={{ width: undefined }}
@@ -170,7 +285,8 @@ export default class Order extends React.Component {
                                 onValueChange = {this.onLocationChange}
                                 >
                                     {this.state.locationForPart.map((picker) => {return <Picker.Item value={picker.LocationName} label={picker.LocationName} key={picker.ID}/>})}
-                            </Picker>
+                            </Picker> */}
+                            <Input disabled = {true} onChangeText={(text) => this.onInputChange(text, 'PrimaryName')} value={this.state.formData.PrimaryName} />
                         </Item>
                     </View>
                 );

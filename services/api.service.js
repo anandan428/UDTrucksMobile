@@ -9,6 +9,15 @@ export function getPartsInfo(partNumber) {
     });
 }
 
+export function getMovementLogInfobyDate(partNumber, date){
+    return axios.get('http://buffermanagementwebservice.azurewebsites.net/api/MovementLogs/MovementLogsbyFilters', {
+        params: {
+            PartNumber: partNumber,
+            CreatedDate: date
+        }
+    });
+}
+
 export function sendMovementLog(data){
     return axios.post('https://BufferManagementHub.azure-devices.net/devices/BufferMgtMobile/messages/events?api-version=2016-11-14', data, {
         headers: {
@@ -34,6 +43,15 @@ export function getLocation(locationName){
     return axios.get('http://buffermanagementwebservice.azurewebsites.net/api/Locations', {
         params: {
             id: locationName
+        }
+    });
+}
+
+export function getPossOrderbyptno(partNumber, date){
+    return axios.get('http://buffermanagementwebservice.azurewebsites.net/api/POSSMovementLogs/POSSMovementLogsbyFilters', {
+        params: {
+            PartNumber: partNumber,
+            CreatedDate: date
         }
     });
 }
